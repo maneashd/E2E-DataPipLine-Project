@@ -118,7 +118,11 @@ which include
 - Step 3
   The data stored in S3 will be read by AWS Glue crawler and creadate a data catalog which can be made availabel to any data warehouse service for further data analysis or developments.
   
-![Data Loading](image.png)
+![Data Loading](crawler.png)
+
+- Step 4
+  Time to crearte a data catalog which can be used by other data warehouses to import the data.
+  ![Data Loading](crawler.png)
 
 
 ## Usage
