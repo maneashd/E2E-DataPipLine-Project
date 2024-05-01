@@ -122,7 +122,7 @@ which include
 
 - Step 4
   Time to crearte a data catalog which can be used by other data warehouses to import the data.
-  ![Data Loading](crawler.png)
+  ![Data Loading](Catalog.png)
 
 
 ## Usage
