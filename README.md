@@ -115,9 +115,11 @@ which include
   query1 = streamWriter(vehicleDF, 's3a://spark-streaming-data01/checkpoints/vehicle_data',
                  's3a://spark-streaming-data01/data/vehicle_data')
   ```
+- Step 3
+  The data stored in S3 will be read by AWS Glue crawler and creadate a data catalog which can be made availabel to any data warehouse service for further data analysis or developments.
+  
+![Data Loading](image.png)
 
-![Data Loading](screenshots/data_loading.png)
-We load the transformed data into a target destination, such as a data warehouse or a database.
 
 ## Usage
 To run the ETL process, follow these steps:
