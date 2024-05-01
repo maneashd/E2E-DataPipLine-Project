@@ -13,7 +13,7 @@ This project demonstrates an end-to-end ETL (Extract, Transform, Load) process u
 - AWS S3
 - AWS GLue
 - AWS Redshift
-## Data Creatinon
+## Data Creation
 The idea is to capture a vehicle realtime data travelliing from point A to point B. This data is create using python functions written in main.py.\
 The important function involved in publishing data to kafka topic is:
 ```python
@@ -50,18 +50,72 @@ which include
 - Spark-master
 - Spark-worker1
 - sparl-worker2
+  
 ![Data Extraction](docker.png)
 
 ### 1. Data Extraction
 - Step 1
+  ```python
+  spark = SparkSession.builder.appName("SmartCityStreaming")
+  ```
+  A spark session is created using SparkSession builder
   
-We extract data from multiple sources, including databases, APIs, and CSV files.
-
+- Step 2
+  For each kafka topic a schema is created mainly used to subscribe the data published.
+  ```pyton
+  vehicleSchema = StructType([
+        StructField("id", StringType(), True),
+        StructField("deviceId", StringType(), True),
+        StructField("timestamp", TimestampType(), True),
+        StructField("location", StringType(), True),
+        StructField("speed", DoubleType(), True),
+        StructField("direction", StringType(), True),
+        StructField("make", StringType(), True),
+        StructField("model", StringType(), True),
+        StructField("year", IntegerType(), True),
+        StructField("fuelType", StringType(), True),
+    ])
+  ```
 ### 2. Data Transformation
-![Data Transformation](screenshots/data_transformation.png)
-We perform various transformations on the extracted data to clean, filter, and enrich it.
+  A function reads the kafka topic and creates a SparkDataframe when called.
+  ```python
+          def read_kafka_topic(topic, schema):
+            return (spark.readStream
+                    .format('kafka')
+                    .option('kafka.bootstrap.servers', 'broker:29092')
+                    .option('subscribe', topic)
+                    .option('startingOffsets', 'earliest')
+                    .load()
+                    .selectExpr('CAST(value AS STRING)')
+                    .select(from_json(col('value'), schema).alias('data'))
+                    .select('data.*')
+                    .withWatermark('timestamp', '2 minutes')
+                    )
+  
+  vehicleDF = read_kafka_topic('vehicle_data', vehicleSchema).alias('vehicle')        # Here 'vehicle_data' is the kafka topic from which data is read.
+  ```
 
 ### 3. Data Loading
+- Step 1
+  Create AWS S3 Bucket
+    ![Data Transformation](image.png)
+    S3 bucket is created and required permissions are given for the spark aplication to write its data to S3. Here the data is converted to parquet format.
+- Step 2
+  ```python
+      def streamWriter(input: DataFrame, checkpointFolder, output):
+        return (input.writeStream
+                .format('parquet')
+                .option('checkpointLocation', checkpointFolder)
+                .option('path', output)
+                .outputMode('append')
+                .start())
+  ```
+  This function takes Dataframe as input and reads the schematic data and writes it to AWS S3 bucket provided as argument.
+  ```python
+  query1 = streamWriter(vehicleDF, 's3a://spark-streaming-data01/checkpoints/vehicle_data',
+                 's3a://spark-streaming-data01/data/vehicle_data')
+  ```
+
 ![Data Loading](screenshots/data_loading.png)
 We load the transformed data into a target destination, such as a data warehouse or a database.
 
