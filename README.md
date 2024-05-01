@@ -98,7 +98,7 @@ which include
 ### 3. Data Loading
 - Step 1
   Create AWS S3 Bucket
-    ![Data Transformation](image.png)
+    ![Data Transformation](S3.png)
     S3 bucket is created and required permissions are given for the spark aplication to write its data to S3. Here the data is converted to parquet format.
 - Step 2
   ```python
